@@ -184,7 +184,12 @@ int main(void)
       switch (ch)
 	{
 	case KEY_NPAGE:
-	  if ((z==0) && (z+page_height>(files-1))) {cursor=files-1;z=0;break;}
+	  if ((z==0) && (z+page_height>(files-1)))
+	    {
+	      cursor=files-1;
+	      z=0;
+	      break;
+	    }
 
 	  z=z+page_height;
 
@@ -198,6 +203,24 @@ int main(void)
 	  
 	  break;
 
+	case KEY_HOME:
+	  z=0;
+	  cursor=0;
+	  break;
+
+	case KEY_END:
+
+	  if ((z==0) && (z+page_height>(files-1)))
+	    {
+	      cursor=files-1;
+	      z=0;
+	      break;
+	    }
+	    
+	  cursor=page_height-1;
+	  z=files-page_height;
+	  break;
+	  
 	case KEY_PPAGE:
 
 	  if (z<page_height)
