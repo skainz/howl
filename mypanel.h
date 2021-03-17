@@ -1,5 +1,5 @@
 #include "types.h"
-
+#include <curses.h>
 typedef struct MyPanel {
 
   int cursor;
@@ -7,8 +7,15 @@ typedef struct MyPanel {
   int toprow;
   Row* zeilen;
   int page_height;
+  WINDOW* window;
+
 } MyPanel;
 
 
-void  mypanel_nav_home(MyPanel *panel);
-void  mypanel_nav_npage(MyPanel *panel);
+//Keyboard navigation functions
+void mypanel_nav_up(MyPanel *panel);
+void mypanel_nav_down(MyPanel *panel);
+void mypanel_nav_ppage(MyPanel *panel);
+void mypanel_nav_npage(MyPanel *panel);
+void mypanel_nav_home(MyPanel *panel);
+void mypanel_nav_end(MyPanel *panel);
