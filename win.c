@@ -132,7 +132,8 @@ int main(void)
 
 
   MyPanel *currentp,*other,*b;
-  links.numfiles=ls(&links.zeilen,"/usr/include");
+  links.cwd="/usr/include";
+  links.numfiles=ls(&links.zeilen,links.cwd/*"/usr/include"*/);
   rechts.numfiles=ls(&rechts.zeilen,"/usr/share/doc");
 
   currentp=&links;
@@ -150,7 +151,7 @@ int main(void)
   noecho();
   curs_set(0);
     cbreak();
-  //  nl();
+    //  nl();
   keypad(stdscr, TRUE);
 
   start_color();
@@ -180,14 +181,14 @@ int main(void)
   while((ch=getch()) != KEY_F(10))
     {
       //  printf("%d\n",ch);exit(0);
-
+      //      printf("KC: %d\n",ch);
+	
       getmaxyx(stdscr, h, b);
       page_height=h-2;
       currentp->page_height=page_height;
       switch (ch)
 	{
-
-	case KEY_RIGHT:
+	case 9:
 	  b=currentp;
 	  currentp=other;
 	  other=b;

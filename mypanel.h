@@ -8,6 +8,7 @@ typedef struct MyPanel {
   Row* zeilen;
   int page_height;
   WINDOW* window;
+  char* cwd;
 
 } MyPanel;
 
