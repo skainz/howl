@@ -98,12 +98,13 @@ void draw(MyPanel * panel, int start)
   //get dimensions of left window
   int h,b;
   getmaxyx(panel->window, h, b);
+  //  printf("fenster ist %d hoch\n",h);
   int page_height=h-2;
   //  int start=2;
   int lines=panel->numfiles;
 
   if (page_height<panel->numfiles) {lines=page_height;}
-
+  //  printf("%d zeilen hoch\n",page_height);
   //  printf("drawing %d lines\n",lines);
   //exit(1);
   for (j=0;j<lines; j++)
@@ -190,8 +191,8 @@ int main(void)
   init_pair(2, COLOR_WHITE, COLOR_RED);
   init_pair(3, COLOR_RED, COLOR_MAGENTA);
 
-  links.window = newwin(LINES, COLS/2, 0, 0);
-  rechts.window = newwin(LINES,COLS/2,0,COLS/2);
+  links.window = newwin(LINES/2, COLS/2, 0, 0);
+  rechts.window = newwin(LINES/2,COLS/2,0,COLS/2);
   //  bkgd(COLOR_PAIR(1));
     wbkgd(links.window, COLOR_PAIR(2));
   wbkgd(rechts.window, COLOR_PAIR(1));
@@ -230,7 +231,7 @@ int main(void)
       //printf("%d\n",ch);exit(0);
       //printf("KC: %d-\n",ch);
 	    
-      getmaxyx(stdscr, h, b);
+            getmaxyx(currentp->window, h, b);
       page_height=h-2;
       currentp->page_height=page_height;
       //      quit();

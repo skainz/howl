@@ -1,4 +1,6 @@
-all:
+all: dynamic static
+
+dynamic:
 #	gcc -Wall -lncurses -o app app.c
 	gcc -Wall  -lncursesw  -o howl win.c mypanel.c
 #	gcc -Wall  -g -lncursesw -ltinfo -ldl  -o panels panels.c -lpanel
