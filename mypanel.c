@@ -97,3 +97,9 @@ void mypanel_nav_end(MyPanel *panel)
   return;
 }
 
+
+int mypanel_mark_on(MyPanel *panel)
+{
+  panel->zeilen[panel->toprow+panel->cursor].marked=1;
+  return 0;
+}

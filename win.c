@@ -7,6 +7,10 @@
 #include <wctype.h>
 #include <locale.h>
 
+#include <stdlib.h>
+#include <termios.h>
+#include <unistd.h>
+
 #include "mypanel.h"
 
 //WINDOW /* *win1,*/ *win2;
@@ -16,8 +20,23 @@ static wchar_t WBUF[BUFLEN];
 
 extern NCURSES_EXPORT(int) mvwaddnwstr (WINDOW *, int, int, const wchar_t *, int);
 
+struct termios orig_termios;
 
 
+void disableRawMode() {
+  tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios);
+}
+
+
+void enableRawMode() {
+  tcgetattr(STDIN_FILENO, &orig_termios);
+  atexit(disableRawMode);
+
+  struct termios raw = orig_termios;
+  raw.c_lflag &= ~(ECHO | ICANON);
+
+  tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
+}
 
 
 int  ls(Row **rowsp,char* path)
@@ -61,6 +80,7 @@ int b,h;
 //int files;
 //int cursor=0;
 MyPanel links,rechts;
+  int ch;
  
 void quit(void)
 {
@@ -73,6 +93,7 @@ void draw(MyPanel * panel, int start)
 {
   
   int j;
+  char SBUF[PATH_MAX];
   
   //get dimensions of left window
   int h,b;
@@ -97,7 +118,10 @@ void draw(MyPanel * panel, int start)
 	  
 	}
 
-      mbstowcs(WBUF,panel->zeilen[j+start].name,PATH_MAX);
+      snprintf(SBUF,b," %s %d",panel->zeilen[j+start].name,panel->zeilen[j+start].marked);
+      mbstowcs(WBUF,SBUF/*panel->zeilen[j+start].name*/,PATH_MAX);
+    
+  //   mbstowcs(WBUF,panel->zeilen[j+start].name,PATH_MAX);
             mvwaddnwstr(panel->window,j+1,2,WBUF,40);
 
       //      mvwaddstr(win1,j+1,2+strlen(zeilen[j+start].name)+1,"xxxx");
@@ -115,7 +139,6 @@ void draw(MyPanel * panel, int start)
   box(panel->window,0,0);
   //  box(win2,0,0);
   //    mvwchgat(win1,0, 0, 1, A_REVERSE, 1, NULL);	
-  char SBUF[128];
   //    files=files*files;
   snprintf(SBUF,b," %d Dateien ",panel->numfiles);
   mvwaddstr(panel->window,h-1,b-strlen(SBUF)-1,SBUF);
@@ -124,6 +147,9 @@ void draw(MyPanel * panel, int start)
   mvwaddstr(panel->window,h-1,b-strlen(SBUF)-1,SBUF);
 
   
+  snprintf(SBUF,b,"%d %s",ch,panel->cwd);
+  mvwaddstr(panel->window,0,1,SBUF);
+
 }
 
 
@@ -134,9 +160,12 @@ int main(void)
   MyPanel *currentp,*other,*b;
   links.cwd="/usr/include";
   links.numfiles=ls(&links.zeilen,links.cwd/*"/usr/include"*/);
-  rechts.numfiles=ls(&rechts.zeilen,"/usr/share/doc");
+  rechts.cwd="/usr/share/doc";
+  rechts.numfiles=ls(&rechts.zeilen,rechts.cwd);
 
-  currentp=&links;
+
+  links.zeilen[0].marked=1;
+    currentp=&links;
   other=&rechts;
     //  printf("anzahl: %d\n",links.numfiles);exit(0);
 
@@ -146,14 +175,16 @@ int main(void)
     exit(0);
   */
   initscr();
+  enableRawMode();
   atexit(quit);
   clear();
   noecho();
   curs_set(0);
-    cbreak();
+  //    cbreak();
     //  nl();
-  keypad(stdscr, TRUE);
-
+    //    nodelay(stdscr,TRUE);
+    keypad(stdscr, TRUE);
+    //raw();
   start_color();
   init_pair(1, COLOR_BLUE, COLOR_GREEN);
   init_pair(2, COLOR_WHITE, COLOR_RED);
@@ -175,19 +206,46 @@ int main(void)
   wrefresh(links.window);
   wrefresh(rechts.window);
   //  int z=0;
+
+  /*char c;
+
+  int ismeta=0;
   
-  int ch;
+  while (read(STDIN_FILENO, &c, 1) == 1 && c != 'q')
+    {
+      if (c==27)
+	{
+	  //Meta key pressed
+	  ismeta=1;
+	}
+    printf("%d\n",c);
+    }
+
+  */
+
+  
   int page_height;
   while((ch=getch()) != KEY_F(10))
     {
-      //  printf("%d\n",ch);exit(0);
-      //      printf("KC: %d\n",ch);
-	
+      //printf("%d\n",ch);exit(0);
+      //printf("KC: %d-\n",ch);
+	    
       getmaxyx(stdscr, h, b);
       page_height=h-2;
       currentp->page_height=page_height;
+      //      quit();
+      //      printf("K_ %d\n\n",ch);exit(0);
+      
       switch (ch)
 	{
+	case 331:
+	  mypanel_mark_on(currentp);
+	  mypanel_nav_down(currentp);
+	  //	  exit(0);
+	  break;
+	case 27:
+	  exit(0);
+	  break;
 	case 9:
 	  b=currentp;
 	  currentp=other;
