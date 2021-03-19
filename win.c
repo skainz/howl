@@ -18,7 +18,7 @@
 #define BUFLEN  PATH_MAX
 static wchar_t WBUF[BUFLEN];
 
-extern NCURSES_EXPORT(int) mvwaddnwstr (WINDOW *, int, int, const wchar_t *, int);
+//extern NCURSES_EXPORT(int) mvwaddnwstr (WINDOW *, int, int, const wchar_t *, int);
 
 struct termios orig_termios;
 
@@ -231,7 +231,7 @@ int main(void)
       //printf("%d\n",ch);exit(0);
       //printf("KC: %d-\n",ch);
 	    
-            getmaxyx(currentp->window, h, b);
+      getmaxyx((currentp->window), h, b);
       page_height=h-2;
       currentp->page_height=page_height;
       //      quit();
