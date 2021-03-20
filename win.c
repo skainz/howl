@@ -114,16 +114,29 @@ void draw(MyPanel * panel, int start)
   //exit(1);
   for (j=0;j<lines; j++)
     {
+
+      if (panel->zeilen[j+start].marked)
+	{
+	  wattron(panel->window,COLOR_PAIR(4));
+	} else
+	{
+	  
+	
+      
       if (j==panel->cursor)
 	{
       wattrset(panel->window,COLOR_PAIR(1));
 
+      
 	} else
 	{
-      wattrset(panel->window,COLOR_PAIR(2));
+	        wattrset(panel->window,COLOR_PAIR(2));
 	  
 	}
-
+      // wattron(panel->window,COLOR_PAIR(4));
+	}
+      
+      //   wattron(COLOR_PAIR(4));
       snprintf(SBUF,b," %s %d",panel->zeilen[j+start].name,panel->zeilen[j+start].marked);
       mbstowcs(WBUF,SBUF/*panel->zeilen[j+start].name*/,PATH_MAX);
     
@@ -196,6 +209,8 @@ int main(void)
   init_pair(2, COLOR_WHITE, COLOR_RED);
   init_pair(3, COLOR_RED, COLOR_MAGENTA);
 
+  init_pair(4, COLOR_WHITE, COLOR_CYAN);
+
   links.window = newwin(LINES, COLS/2, 0, 0);
   rechts.window = newwin(LINES,COLS/2,0,COLS/2);
   //  bkgd(COLOR_PAIR(1));
@@ -257,7 +272,7 @@ int main(void)
       switch (ch)
 	{
 	case 331:
-	  mypanel_mark_on(currentp);
+	  mypanel_mark_toggle(currentp);
 	  mypanel_nav_down(currentp);
 	  //	  exit(0);
 	  break;

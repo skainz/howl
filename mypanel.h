@@ -25,3 +25,5 @@ void mypanel_nav_end(MyPanel *panel);
 //Highlighting items
 
 int mypanel_mark_on(MyPanel *panel);
+int mypanel_mark_offn(MyPanel *panel);
+int mypanel_mark_toggle(MyPanel *panel);

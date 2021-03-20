@@ -103,3 +103,22 @@ int mypanel_mark_on(MyPanel *panel)
   panel->zeilen[panel->toprow+panel->cursor].marked=1;
   return 0;
 }
+
+int mypanel_mark_off(MyPanel *panel)
+{
+  panel->zeilen[panel->toprow+panel->cursor].marked=0;
+  return 0;
+}
+
+int mypanel_mark_toggle(MyPanel *panel)
+{
+  if (panel->zeilen[panel->toprow+panel->cursor].marked)
+    {
+  panel->zeilen[panel->toprow+panel->cursor].marked=0;
+    }else
+    {
+  panel->zeilen[panel->toprow+panel->cursor].marked=1;
+
+    }
+  return 0;
+}
