@@ -18,7 +18,9 @@
 #define BUFLEN  PATH_MAX
 static wchar_t WBUF[BUFLEN];
 
-//extern NCURSES_EXPORT(int) mvwaddnwstr (WINDOW *, int, int, const wchar_t *, int);
+//#define _XOPEN_SOURCE_EXTENDED
+//##define NCURSES_WIDECHAR 1
+//extern int mvwaddnwstr (WINDOW *, int, int, const wchar_t *, int);
 
 struct termios orig_termios;
 
@@ -81,12 +83,15 @@ int b,h;
 //int cursor=0;
 MyPanel links,rechts;
   int ch;
- 
+
+int currentlines,currentcols;
 void quit(void)
 {
   delwin(links.window);
-  //  delwin(win2);
+    delwin(rechts.window);
   endwin();
+  //    disableRawMode();
+
 }
 
 void draw(MyPanel * panel, int start)
@@ -123,7 +128,7 @@ void draw(MyPanel * panel, int start)
       mbstowcs(WBUF,SBUF/*panel->zeilen[j+start].name*/,PATH_MAX);
     
   //   mbstowcs(WBUF,panel->zeilen[j+start].name,PATH_MAX);
-            mvwaddnwstr(panel->window,j+1,2,WBUF,40);
+      mvwaddnwstr(panel->window,(j+1),(2),(WBUF),(40));
 
       //      mvwaddstr(win1,j+1,2+strlen(zeilen[j+start].name)+1,"xxxx");
 	    //      mvwhline(win1, j+1, 2+strlen(zeilen[j+start].name), 'x', 5);
@@ -176,12 +181,12 @@ int main(void)
     exit(0);
   */
   initscr();
-  enableRawMode();
+  //  enableRawMode();
   atexit(quit);
   clear();
   noecho();
   curs_set(0);
-  //    cbreak();
+      cbreak();
     //  nl();
     //    nodelay(stdscr,TRUE);
     keypad(stdscr, TRUE);
@@ -191,8 +196,8 @@ int main(void)
   init_pair(2, COLOR_WHITE, COLOR_RED);
   init_pair(3, COLOR_RED, COLOR_MAGENTA);
 
-  links.window = newwin(LINES/2, COLS/2, 0, 0);
-  rechts.window = newwin(LINES/2,COLS/2,0,COLS/2);
+  links.window = newwin(LINES, COLS/2, 0, 0);
+  rechts.window = newwin(LINES,COLS/2,0,COLS/2);
   //  bkgd(COLOR_PAIR(1));
     wbkgd(links.window, COLOR_PAIR(2));
   wbkgd(rechts.window, COLOR_PAIR(1));
@@ -226,17 +231,29 @@ int main(void)
 
   
   int page_height;
+
+  getmaxyx(stdscr,currentlines,currentcols);
+  
   while((ch=getch()) != KEY_F(10))
     {
-      //printf("%d\n",ch);exit(0);
-      //printf("KC: %d-\n",ch);
-	    
       getmaxyx((currentp->window), h, b);
       page_height=h-2;
       currentp->page_height=page_height;
-      //      quit();
-      //      printf("K_ %d\n\n",ch);exit(0);
-      
+
+      int nl,nc;
+      getmaxyx(stdscr,nl,nc);
+      if (!(currentlines==nl) || (!(currentcols==nc)))
+	{
+	  currentlines=nl;
+	  currentcols=nc;
+	  wclear(currentp->window);
+	  wclear(other->window);
+	  wresize(currentp->window,nl,nc/2);
+	  wresize(other->window,nl,nc/2);
+	  mvwin(other->window,0,nc/2); 
+	  draw(other,other->toprow);
+	}
+
       switch (ch)
 	{
 	case 331:
@@ -281,13 +298,13 @@ int main(void)
    
       /*    wresize(win1,h,b/2);
       wresize(win2,h,b/2);
-      mvwin(win2,0,b/2);
+      mvwin(win2,0,b/2); 
     
       wclear(win1);
       wclear(win2);
       */
       draw(currentp,currentp->toprow);
-    
+
       refresh();
       wrefresh(links.window);
       wrefresh(rechts.window);
