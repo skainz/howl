@@ -13,6 +13,8 @@
 
 #include "mypanel.h"
 
+
+
 //WINDOW /* *win1,*/ *win2;
 
 #define BUFLEN  PATH_MAX
@@ -38,6 +40,25 @@ void enableRawMode() {
   raw.c_lflag &= ~(ECHO | ICANON);
 
   tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
+}
+
+
+int _mypanel_cmpfunc_name_asc(const void *a,const void *b)
+{
+
+  struct Row * a1 =(struct Row *)a;
+  struct Row * b1 =(struct Row *)b;
+  
+  return strcmp(a1->name,b1->name);  
+}
+
+int _mypanel_cmpfunc_name_desc(const void *a,const void *b)
+{
+
+  struct Row * a1 =(struct Row *)a;
+  struct Row * b1 =(struct Row *)b;
+  
+  return strcmp(b1->name,a1->name);  
 }
 
 
@@ -138,18 +159,24 @@ void draw(MyPanel * panel, int start)
       
       //   wattron(COLOR_PAIR(4));
       snprintf(SBUF,b," %s %d",panel->zeilen[j+start].name,panel->zeilen[j+start].marked);
+      int f;
+      int z=strlen(SBUF);
+      for (f=0;f<b;f++) {strncat(SBUF," ",PATH_MAX);}
+      //      strncat(SBUF," xxxxx",PATH_MAX);
       mbstowcs(WBUF,SBUF/*panel->zeilen[j+start].name*/,PATH_MAX);
     
   //   mbstowcs(WBUF,panel->zeilen[j+start].name,PATH_MAX);
-      mvwaddnwstr(panel->window,(j+1),(2),(WBUF),(40));
+      mvwaddnwstr(panel->window,(j+1),(2),(WBUF),b-4);
 
       //      mvwaddstr(win1,j+1,2+strlen(zeilen[j+start].name)+1,"xxxx");
 	    //      mvwhline(win1, j+1, 2+strlen(zeilen[j+start].name), 'x', 5);
       //      wchgat(win1,j+1,10,COLOR_PAIR(1));
       //  whline(win1,"-",20-strlen(WBUF));
+      //      wattrset(panel->window,COLOR_PAIR(4));
+      //      mvwchgat(panel->window,j+1,30,1,A_REVERSE,COLOR_PAIR(4),0);
       wclrtoeol(panel->window);
       wattrset(panel->window,COLOR_PAIR(2));
-      
+      //      wchgat(panel->window,);
       //      mvwaddnstr(win1, j + 1, 2, zeilen[j].name,10);
     }
   //   mvwaddstr(win1, 3, 3, "Hallo win");
@@ -177,13 +204,29 @@ int main(void)
 
 
   MyPanel *currentp,*other,*b;
-  links.cwd="/usr/include";
+  links.cwd="/tmp/f";
   links.numfiles=ls(&links.zeilen,links.cwd/*"/usr/include"*/);
   rechts.cwd="/usr/share/doc";
   rechts.numfiles=ls(&rechts.zeilen,rechts.cwd);
 
 
-  links.zeilen[0].marked=1;
+
+
+  //debug tryng out sorting
+  qsort (links.zeilen,links.numfiles,sizeof(Row),_mypanel_cmpfunc_name_asc);
+  qsort (rechts.zeilen,rechts.numfiles,sizeof(Row),_mypanel_cmpfunc_name_desc);
+
+  int z=0;
+  for (z=0;z<links.numfiles;z++)
+    {
+      //  printf("%s\n",links.zeilen[z].name);
+    }
+
+
+  //  exit(0);
+
+  // ende debug
+  //  links.zeilen[0].marked=1;
     currentp=&links;
   other=&rechts;
     //  printf("anzahl: %d\n",links.numfiles);exit(0);
@@ -271,7 +314,7 @@ int main(void)
 
       switch (ch)
 	{
-	case 331:
+	case 331: //INSERT
 	  mypanel_mark_toggle(currentp);
 	  mypanel_nav_down(currentp);
 	  //	  exit(0);
