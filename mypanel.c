@@ -1,4 +1,5 @@
 #include "mypanel.h"
+#include <sys/stat.h>
 
 
 void mypanel_nav_up(MyPanel *panel)
@@ -121,4 +122,36 @@ int mypanel_mark_toggle(MyPanel *panel)
 
     }
   return 0;
+}
+
+
+
+int _mypanel_cmpfunc_name_asc(const void *a,const void *b)
+{
+
+  struct Row * a1 =(struct Row *)a;
+  struct Row * b1 =(struct Row *)b;
+  
+  return strcmp(a1->name,b1->name);  
+}
+
+int _mypanel_cmpfunc_name_desc(const void *a,const void *b)
+{
+
+  struct Row * a1 =(struct Row *)a;
+  struct Row * b1 =(struct Row *)b;
+  
+  return strcmp(b1->name,a1->name);  
+}
+
+int _mypanel_cmpfunc_dirs_top(const void *a,const void *b)
+{
+  struct Row * a1 =(struct Row *)a;
+  struct Row * b1 =(struct Row *)b;
+
+  struct stat * sba1=a1->statbuf;
+  struct stat * sbb1=b1->statbuf;
+  
+  return (S_ISDIR(sba1->st_mode)<S_ISDIR(sbb1->st_mode));
+
 }

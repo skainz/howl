@@ -27,3 +27,12 @@ void mypanel_nav_end(MyPanel *panel);
 int mypanel_mark_on(MyPanel *panel);
 int mypanel_mark_offn(MyPanel *panel);
 int mypanel_mark_toggle(MyPanel *panel);
+
+
+//Sorting
+
+int _mypanel_cmpfunc_name_asc(const void *a,const void *b);
+int _mypanel_cmpfunc_name_desc(const void *a,const void *b);
+int _mypanel_cmpfunc_dirs_top(const void *a,const void *b);
+
+

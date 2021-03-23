@@ -12,16 +12,12 @@
 #include <unistd.h>
 
 #include "mypanel.h"
+#include <sys/stat.h>
 
-
-
-//WINDOW /* *win1,*/ *win2;
 
 #define BUFLEN  PATH_MAX
 static wchar_t WBUF[BUFLEN];
 
-//#define _XOPEN_SOURCE_EXTENDED
-//##define NCURSES_WIDECHAR 1
 //extern int mvwaddnwstr (WINDOW *, int, int, const wchar_t *, int);
 
 struct termios orig_termios;
@@ -43,23 +39,6 @@ void enableRawMode() {
 }
 
 
-int _mypanel_cmpfunc_name_asc(const void *a,const void *b)
-{
-
-  struct Row * a1 =(struct Row *)a;
-  struct Row * b1 =(struct Row *)b;
-  
-  return strcmp(a1->name,b1->name);  
-}
-
-int _mypanel_cmpfunc_name_desc(const void *a,const void *b)
-{
-
-  struct Row * a1 =(struct Row *)a;
-  struct Row * b1 =(struct Row *)b;
-  
-  return strcmp(b1->name,a1->name);  
-}
 
 
 int  ls(Row **rowsp,char* path)
@@ -69,7 +48,7 @@ int  ls(Row **rowsp,char* path)
   Row *rows;
   int n=0; // NUmber of files in current dir
   int i; //index pointer
-  
+     struct stat statbuf; 
   if (!(dp=opendir(path)))
     {
       return -1; // unable to open dir, for whatever reason
@@ -86,8 +65,15 @@ int  ls(Row **rowsp,char* path)
   while ((ep = readdir(dp)))
     {
       rows[i].name=malloc(strlen(ep->d_name)+2);
-
       strcpy(rows[i].name,ep->d_name);
+      //      printf("%ld\n",sizeof(struct stat));
+      rows[i].statbuf=malloc(sizeof(struct stat));
+      
+      stat(rows[i].name,rows[i].statbuf);
+       if (S_ISDIR(rows[i].statbuf->st_mode)) {
+            strcat(rows[i].name, "/");
+       }
+
       i++;
       //     printf("%d %s\n",i,ep->d_name);
     }
@@ -138,10 +124,11 @@ void draw(MyPanel * panel, int start)
 
       if (panel->zeilen[j+start].marked)
 	{
-	  wattron(panel->window,COLOR_PAIR(4));
+	  wattron(panel->window,A_STANDOUT);
+	  //	  wattron(panel->window,COLOR_PAIR(4));
 	} else
 	{
-	  
+	  wattroff(panel->window,A_STANDOUT);
 	
       
       if (j==panel->cursor)
@@ -188,11 +175,13 @@ void draw(MyPanel * panel, int start)
   //    files=files*files;
   snprintf(SBUF,b," %d Dateien ",panel->numfiles);
   mvwaddstr(panel->window,h-1,b-strlen(SBUF)-1,SBUF);
-
+  wattron(panel->window,COLOR_PAIR(5));
+  wattron(panel->window,A_BOLD);
   snprintf(SBUF,b,"ph: %d, files %d, z:%d, cursor: %d Dateien ",page_height,panel->numfiles,start,panel->cursor);
   mvwaddstr(panel->window,h-1,b-strlen(SBUF)-1,SBUF);
-
+  wattroff(panel->window,COLOR_PAIR(2));
   
+  wattroff(panel->window,A_BOLD);
   snprintf(SBUF,b,"%d %s",ch,panel->cwd);
   mvwaddstr(panel->window,0,1,SBUF);
 
@@ -204,7 +193,7 @@ int main(void)
 
 
   MyPanel *currentp,*other,*b;
-  links.cwd="/tmp/f";
+  links.cwd=".";
   links.numfiles=ls(&links.zeilen,links.cwd/*"/usr/include"*/);
   rechts.cwd="/usr/share/doc";
   rechts.numfiles=ls(&rechts.zeilen,rechts.cwd);
@@ -213,7 +202,11 @@ int main(void)
 
 
   //debug tryng out sorting
+
+  //qsort (links.zeilen,links.numfiles,sizeof(Row),_mypanel_cmpfunc_dirs_top);
+
   qsort (links.zeilen,links.numfiles,sizeof(Row),_mypanel_cmpfunc_name_asc);
+  
   qsort (rechts.zeilen,rechts.numfiles,sizeof(Row),_mypanel_cmpfunc_name_desc);
 
   int z=0;
@@ -253,7 +246,8 @@ int main(void)
   init_pair(3, COLOR_RED, COLOR_MAGENTA);
 
   init_pair(4, COLOR_WHITE, COLOR_CYAN);
-
+  init_pair(5,COLOR_WHITE,COLOR_BLUE);
+  
   links.window = newwin(LINES, COLS/2, 0, 0);
   rechts.window = newwin(LINES,COLS/2,0,COLS/2);
   //  bkgd(COLOR_PAIR(1));
@@ -300,7 +294,7 @@ int main(void)
 
       int nl,nc;
       getmaxyx(stdscr,nl,nc);
-      if (!(currentlines==nl) || (!(currentcols==nc)))
+      if (!(currentlines==nl) || (!(currentcols==nc))) // Check if window was resized
 	{
 	  currentlines=nl;
 	  currentcols=nc;
@@ -308,8 +302,11 @@ int main(void)
 	  wclear(other->window);
 	  wresize(currentp->window,nl,nc/2);
 	  wresize(other->window,nl,nc/2);
-	  mvwin(other->window,0,nc/2); 
+	  mvwin(other->window,0,nc/2);
+	  mvwin(currentp->window,0,0);
+	  draw(currentp,currentp->toprow);
 	  draw(other,other->toprow);
+	  
 	}
 
       switch (ch)
