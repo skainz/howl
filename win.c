@@ -58,18 +58,23 @@ int  ls(Row **rowsp,char* path)
     {
       n++;
     }
+  
   rows=malloc(n*sizeof(Row));
   
   rewinddir(dp);
   i=0;
+  chdir(path);
   while ((ep = readdir(dp)))
     {
+      if (strcmp(".",ep->d_name)==0) continue;
       rows[i].name=malloc(strlen(ep->d_name)+2);
       strcpy(rows[i].name,ep->d_name);
       //      printf("%ld\n",sizeof(struct stat));
       rows[i].statbuf=malloc(sizeof(struct stat));
-      
-      stat(rows[i].name,rows[i].statbuf);
+      char* fullpath=path;
+      //      strcat(fullpath,path);
+      int statrv=stat(rows[i].name,rows[i].statbuf);
+      if (statrv == -1) { printf("error stating %s, dir %s,fullpath %s\n",ep->d_name,path,fullpath);exit (1);}
        if (S_ISDIR(rows[i].statbuf->st_mode)) {
             strcat(rows[i].name, "/");
        }
@@ -80,7 +85,7 @@ int  ls(Row **rowsp,char* path)
 
   closedir(dp);
   *rowsp=rows;
-  return n;
+  return i;
 }
 
     
@@ -121,14 +126,22 @@ void draw(MyPanel * panel, int start)
   //exit(1);
   for (j=0;j<lines; j++)
     {
+      if (  S_ISDIR(panel->zeilen[j+start].statbuf->st_mode))
+	{
+	  wattron(panel->window,A_BOLD);
+	} else
+	{
+	  wattroff(panel->window,A_BOLD);
+	}
 
-      if (panel->zeilen[j+start].marked)
+
+	    if (panel->zeilen[j+start].marked)
 	{
 	  wattron(panel->window,A_STANDOUT);
 	  //	  wattron(panel->window,COLOR_PAIR(4));
 	} else
 	{
-	  wattroff(panel->window,A_STANDOUT);
+	  //  wattroff(panel->window,A_STANDOUT);
 	
       
       if (j==panel->cursor)
@@ -138,14 +151,15 @@ void draw(MyPanel * panel, int start)
       
 	} else
 	{
-	        wattrset(panel->window,COLOR_PAIR(2));
+	  //    wattrset(panel->window,COLOR_PAIR(2));
 	  
 	}
       // wattron(panel->window,COLOR_PAIR(4));
 	}
       
       //   wattron(COLOR_PAIR(4));
-      snprintf(SBUF,b," %s %d",panel->zeilen[j+start].name,panel->zeilen[j+start].marked);
+      snprintf(SBUF,b," %s",panel->zeilen[j+start].name);
+      //,panel->zeilen[j+start].marked);
       int f;
       int z=strlen(SBUF);
       for (f=0;f<b;f++) {strncat(SBUF," ",PATH_MAX);}
@@ -195,27 +209,14 @@ int main(void)
   MyPanel *currentp,*other,*b;
   links.cwd=".";
   links.numfiles=ls(&links.zeilen,links.cwd/*"/usr/include"*/);
-  rechts.cwd="/usr/share/doc";
+    rechts.cwd="/usr/share/doc";
   rechts.numfiles=ls(&rechts.zeilen,rechts.cwd);
 
+  _mypanel_sort_dirs_top(&links);
+  _mypanel_sort_dirs_top(&rechts);
 
-
-
-  //debug tryng out sorting
-
-  //qsort (links.zeilen,links.numfiles,sizeof(Row),_mypanel_cmpfunc_dirs_top);
-
-  qsort (links.zeilen,links.numfiles,sizeof(Row),_mypanel_cmpfunc_name_asc);
+  // _mypanel_sort_dirs_top(&links);
   
-  qsort (rechts.zeilen,rechts.numfiles,sizeof(Row),_mypanel_cmpfunc_name_desc);
-
-  int z=0;
-  for (z=0;z<links.numfiles;z++)
-    {
-      //  printf("%s\n",links.zeilen[z].name);
-    }
-
-
   //  exit(0);
 
   // ende debug

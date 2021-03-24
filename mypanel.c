@@ -155,3 +155,24 @@ int _mypanel_cmpfunc_dirs_top(const void *a,const void *b)
   return (S_ISDIR(sba1->st_mode)<S_ISDIR(sbb1->st_mode));
 
 }
+
+
+int _mypanel_sort_dirs_top(MyPanel *panel)
+{
+  
+    qsort (panel->zeilen,panel->numfiles,sizeof(Row),_mypanel_cmpfunc_dirs_top);
+  // get number of directory entries
+  int z=0;
+  while ((z<(panel->numfiles)-1) && S_ISDIR(panel->zeilen[z].statbuf->st_mode)) z++;
+
+  // find entry point for lsit of files
+  Row* files=panel->zeilen;
+  files=files+z;
+
+  //sort directories 
+  qsort(panel->zeilen,z,sizeof(Row),_mypanel_cmpfunc_name_asc);
+  // sort filenames
+ 
+  qsort(files,panel->numfiles-z-1,sizeof(Row),_mypanel_cmpfunc_name_asc);
+
+}
