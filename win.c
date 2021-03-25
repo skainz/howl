@@ -71,6 +71,7 @@ int  ls(Row **rowsp,char* path)
       strcpy(rows[i].name,ep->d_name);
       //      printf("%ld\n",sizeof(struct stat));
       rows[i].statbuf=malloc(sizeof(struct stat));
+      rows[i].marked=0;
       char* fullpath=path;
       //      strcat(fullpath,path);
       int statrv=stat(rows[i].name,rows[i].statbuf);
@@ -94,6 +95,7 @@ int b,h;
 //int files;
 //int cursor=0;
 MyPanel links,rechts;
+//Mypanel
   int ch;
 
 int currentlines,currentcols;
@@ -135,7 +137,7 @@ void draw(MyPanel * panel, int start)
 	}
 
 
-	    if (panel->zeilen[j+start].marked)
+      if (panel->zeilen[j+start].marked)
 	{
 	  wattron(panel->window,A_STANDOUT);
 	  //	  wattron(panel->window,COLOR_PAIR(4));
@@ -144,17 +146,17 @@ void draw(MyPanel * panel, int start)
 	  //  wattroff(panel->window,A_STANDOUT);
 	
       
-      if (j==panel->cursor)
-	{
-      wattrset(panel->window,COLOR_PAIR(1));
+	  if (j==panel->cursor)
+	    {
+	      wattrset(panel->window,COLOR_PAIR(1));
 
       
-	} else
-	{
-	  //    wattrset(panel->window,COLOR_PAIR(2));
+	    } else
+	    {
+	      //    wattrset(panel->window,COLOR_PAIR(2));
 	  
-	}
-      // wattron(panel->window,COLOR_PAIR(4));
+	    }
+	  // wattron(panel->window,COLOR_PAIR(4));
 	}
       
       //   wattron(COLOR_PAIR(4));
@@ -166,11 +168,11 @@ void draw(MyPanel * panel, int start)
       //      strncat(SBUF," xxxxx",PATH_MAX);
       mbstowcs(WBUF,SBUF/*panel->zeilen[j+start].name*/,PATH_MAX);
     
-  //   mbstowcs(WBUF,panel->zeilen[j+start].name,PATH_MAX);
+      //   mbstowcs(WBUF,panel->zeilen[j+start].name,PATH_MAX);
       mvwaddnwstr(panel->window,(j+1),(2),(WBUF),b-4);
 
       //      mvwaddstr(win1,j+1,2+strlen(zeilen[j+start].name)+1,"xxxx");
-	    //      mvwhline(win1, j+1, 2+strlen(zeilen[j+start].name), 'x', 5);
+      //      mvwhline(win1, j+1, 2+strlen(zeilen[j+start].name), 'x', 5);
       //      wchgat(win1,j+1,10,COLOR_PAIR(1));
       //  whline(win1,"-",20-strlen(WBUF));
       //      wattrset(panel->window,COLOR_PAIR(4));
@@ -180,13 +182,10 @@ void draw(MyPanel * panel, int start)
       //      wchgat(panel->window,);
       //      mvwaddnstr(win1, j + 1, 2, zeilen[j].name,10);
     }
-  //   mvwaddstr(win1, 3, 3, "Hallo win");
-  // mvwaddstr(win2, 7, 3, "Diese Zeichenkette wird nicht angezeigt!"); 
-  // da ausserhalb des win-Anzeigebereichs
+
   box(panel->window,0,0);
-  //  box(win2,0,0);
-  //    mvwchgat(win1,0, 0, 1, A_REVERSE, 1, NULL);	
-  //    files=files*files;
+
+  
   snprintf(SBUF,b," %d Dateien ",panel->numfiles);
   mvwaddstr(panel->window,h-1,b-strlen(SBUF)-1,SBUF);
   wattron(panel->window,COLOR_PAIR(5));
@@ -199,7 +198,9 @@ void draw(MyPanel * panel, int start)
   snprintf(SBUF,b,"%d %s",ch,panel->cwd);
   mvwaddstr(panel->window,0,1,SBUF);
 
-}
+  //wborder(panel->windows, chtype ls, chtype rs, chtype ts, chtype bs, chtype tl, chtype tr, chtype bl, chtype br);
+  //  ACS_VLINE, ACS_VLINE, ACS_HLINE, ACS_HLINE, ACS_ULCORNER, ACS_URCORNER, ACS_BLCORNER, ACS_BRCORNER
+    }
 
 
 int main(void)
@@ -207,9 +208,10 @@ int main(void)
 
 
   MyPanel *currentp,*other,*b;
-  links.cwd=".";
+  links.cwd="/home/skainz";
   links.numfiles=ls(&links.zeilen,links.cwd/*"/usr/include"*/);
-    rechts.cwd="/usr/share/doc";
+
+  rechts.cwd="/usr/share/doc";
   rechts.numfiles=ls(&rechts.zeilen,rechts.cwd);
 
   _mypanel_sort_dirs_top(&links);
@@ -284,7 +286,8 @@ int main(void)
 
   
   int page_height;
-
+  char cwd[PATH_MAX];
+  int lp;
   getmaxyx(stdscr,currentlines,currentcols);
   
   while((ch=getch()) != KEY_F(10))
@@ -309,6 +312,9 @@ int main(void)
 	  draw(other,other->toprow);
 	  
 	}
+
+
+      	  int selected=currentp->toprow+currentp->cursor;
 
       switch (ch)
 	{
@@ -350,15 +356,53 @@ int main(void)
 	case KEY_DOWN:
 	  mypanel_nav_down(currentp);
 	  break;
+
+	case 10:
+
+	  // todo:
+	  // zeilen freigeben
+	  // meta infos freigeben
+	  // ins verzeichnis wechseln
+	  // dir listing holen
+	  // cursor reset
+	  // toprow reset
+	  //  sortieren
+	  // panel refresh
+	  
+	  chdir(links.cwd);
+	  getcwd(cwd, sizeof(cwd));
+
+	  links.cwd=cwd;
+	  strcat(links.cwd,"/");
+	  strcat(links.cwd,currentp->zeilen[selected].name);
+	  
+	  chdir(links.cwd);
+	  
+	  for (lp=0;lp<links.numfiles;lp++)
+	    {
+	      free(links.zeilen[lp].statbuf);
+	      free(links.zeilen[lp].name);
+	      
+	    }
+	  free(links.zeilen);
+	  
+	   links.numfiles=ls(&links.zeilen,links.cwd/*"/usr/include"*/);
+	   links.cursor=0;
+	   links.toprow=0;
+	   wclear(currentp->window);
+      
+	   //getcwd(cwd, sizeof(cwd));
+	  
+	  _mypanel_sort_dirs_top(&links);
+		  //printf("gew: L: %s,%s,%s\n",links.cwd,cwd,currentp->zeilen[selected].name);
+
+	  
+	  //exit(0);
+	  break;
 	}
-   
-      /*    wresize(win1,h,b/2);
-      wresize(win2,h,b/2);
-      mvwin(win2,0,b/2); 
-    
-      wclear(win1);
-      wclear(win2);
-      */
+
+      
+
       draw(currentp,currentp->toprow);
 
       refresh();
