@@ -1,0 +1,6 @@
+wchar support: url
+http://yjlv.blogspot.com/2015/10/displaying-unicode-with-ncurses-in-c.html
+
+
+https://viewsourcecode.org/snaptoken/kilo/05.aTextEditor.html
+

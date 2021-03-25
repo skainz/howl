@@ -46,9 +46,8 @@ int  ls(Row **rowsp,char* path)
   DIR *dp;
   struct dirent *ep;
   Row *rows;
-  int n=0; // NUmber of files in current dir
+  int n=0; // Number of files in current dir
   int i; //index pointer
-     struct stat statbuf; 
   if (!(dp=opendir(path)))
     {
       return -1; // unable to open dir, for whatever reason
@@ -91,13 +90,8 @@ int  ls(Row **rowsp,char* path)
 
     
 
-int b,h;
-//int files;
-//int cursor=0;
+int b,h,ch;
 MyPanel links,rechts;
-//Mypanel
-  int ch;
-
 int currentlines,currentcols;
 void quit(void)
 {
@@ -117,15 +111,13 @@ void draw(MyPanel * panel, int start)
   //get dimensions of left window
   int h,b;
   getmaxyx(panel->window, h, b);
-  //  printf("fenster ist %d hoch\n",h);
+
   int page_height=h-2;
-  //  int start=2;
+
   int lines=panel->numfiles;
 
   if (page_height<panel->numfiles) {lines=page_height;}
-  //  printf("%d zeilen hoch\n",page_height);
-  //  printf("drawing %d lines\n",lines);
-  //exit(1);
+
   for (j=0;j<lines; j++)
     {
       if (  S_ISDIR(panel->zeilen[j+start].statbuf->st_mode))
@@ -159,32 +151,23 @@ void draw(MyPanel * panel, int start)
 	  // wattron(panel->window,COLOR_PAIR(4));
 	}
       
-      //   wattron(COLOR_PAIR(4));
-      snprintf(SBUF,b," %s",panel->zeilen[j+start].name);
-      //,panel->zeilen[j+start].marked);
-      int f;
-      int z=strlen(SBUF);
-      for (f=0;f<b;f++) {strncat(SBUF," ",PATH_MAX);}
-      //      strncat(SBUF," xxxxx",PATH_MAX);
-      mbstowcs(WBUF,SBUF/*panel->zeilen[j+start].name*/,PATH_MAX);
-    
-      //   mbstowcs(WBUF,panel->zeilen[j+start].name,PATH_MAX);
-      mvwaddnwstr(panel->window,(j+1),(2),(WBUF),b-4);
 
-      //      mvwaddstr(win1,j+1,2+strlen(zeilen[j+start].name)+1,"xxxx");
-      //      mvwhline(win1, j+1, 2+strlen(zeilen[j+start].name), 'x', 5);
-      //      wchgat(win1,j+1,10,COLOR_PAIR(1));
-      //  whline(win1,"-",20-strlen(WBUF));
-      //      wattrset(panel->window,COLOR_PAIR(4));
-      //      mvwchgat(panel->window,j+1,30,1,A_REVERSE,COLOR_PAIR(4),0);
-      wclrtoeol(panel->window);
+      snprintf(SBUF,b," %s",panel->zeilen[j+start].name);
+
+      int f;
+      for (f=0;f<b;f++) {strncat(SBUF," ",PATH_MAX);}
+
+      mbstowcs(WBUF,SBUF,PATH_MAX);
+    
+        mvwaddnwstr(panel->window,(j+1),(2),(WBUF),b-4);
+
+        wclrtoeol(panel->window);
       wattrset(panel->window,COLOR_PAIR(2));
-      //      wchgat(panel->window,);
-      //      mvwaddnstr(win1, j + 1, 2, zeilen[j].name,10);
+  
     }
 
   box(panel->window,0,0);
-
+  
   
   snprintf(SBUF,b," %d Dateien ",panel->numfiles);
   mvwaddstr(panel->window,h-1,b-strlen(SBUF)-1,SBUF);
@@ -197,10 +180,8 @@ void draw(MyPanel * panel, int start)
   wattroff(panel->window,A_BOLD);
   snprintf(SBUF,b,"%d %s",ch,panel->cwd);
   mvwaddstr(panel->window,0,1,SBUF);
-
-  //wborder(panel->windows, chtype ls, chtype rs, chtype ts, chtype bs, chtype tl, chtype tr, chtype bl, chtype br);
-  //  ACS_VLINE, ACS_VLINE, ACS_HLINE, ACS_HLINE, ACS_ULCORNER, ACS_URCORNER, ACS_BLCORNER, ACS_BRCORNER
-    }
+  
+}
 
 
 int main(void)
@@ -266,23 +247,7 @@ int main(void)
   refresh();
   wrefresh(links.window);
   wrefresh(rechts.window);
-  //  int z=0;
 
-  /*char c;
-
-  int ismeta=0;
-  
-  while (read(STDIN_FILENO, &c, 1) == 1 && c != 'q')
-    {
-      if (c==27)
-	{
-	  //Meta key pressed
-	  ismeta=1;
-	}
-    printf("%d\n",c);
-    }
-
-  */
 
   
   int page_height;
@@ -386,18 +351,12 @@ int main(void)
 	    }
 	  free(links.zeilen);
 	  
-	   links.numfiles=ls(&links.zeilen,links.cwd/*"/usr/include"*/);
+	   links.numfiles=ls(&links.zeilen,links.cwd);
 	   links.cursor=0;
 	   links.toprow=0;
 	   wclear(currentp->window);
-      
-	   //getcwd(cwd, sizeof(cwd));
-	  
 	  _mypanel_sort_dirs_top(&links);
-		  //printf("gew: L: %s,%s,%s\n",links.cwd,cwd,currentp->zeilen[selected].name);
 
-	  
-	  //exit(0);
 	  break;
 	}
 
@@ -409,9 +368,6 @@ int main(void)
       wrefresh(links.window);
       wrefresh(rechts.window);
 
-      //printf("%d %d ",b,h);
-      //  z++;
-    
     } 
 
   return(0);
