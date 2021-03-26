@@ -121,7 +121,7 @@ void draw(MyPanel * panel, int start)
       snprintf(SBUF,b," %s",panel->zeilen[j+start].name);
 
       int f;
-      for (f=0;f<b;f++) {strncat(SBUF," ",PATH_MAX);}
+      for (f=0;f<b;f++) {strncat(SBUF," ",PATH_MAX-1);}
 
       mbstowcs(WBUF,SBUF,PATH_MAX);
     
@@ -222,10 +222,8 @@ int main(void)
 
   
   int page_height;
-  char cwd[PATH_MAX];
   char newdir[PATH_MAX];
 	
-  int lp;
   getmaxyx(stdscr,currentlines,currentcols);
   
   while((ch=getch()) != KEY_F(10))
@@ -317,12 +315,12 @@ int main(void)
 	  */
 	  //	  printf("CD: %s \n",links.cwd);
 
-	  strcpy(newdir,links.cwd);
+	  strcpy(newdir,currentp->cwd);
 	  strcat(newdir,"/");
 	  strcat(newdir,currentp->zeilen[selected].name);
 
-	  _mypanel_free(&links);
-	  _mypanel_cd(&links,newdir);
+	  _mypanel_free(currentp);
+	  _mypanel_cd(currentp,newdir);
 	  //	  chdir(links.cwd);
 	  
 	  
@@ -331,7 +329,7 @@ int main(void)
 	   links.toprow=0;
 	  */
 	   wclear(currentp->window);
-	  _mypanel_sort_dirs_top(&links);
+	  _mypanel_sort_dirs_top(currentp);
 
 	  break;
 	}

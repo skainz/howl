@@ -159,7 +159,7 @@ int _mypanel_cmpfunc_dirs_top(const void *a,const void *b)
 }
 
 
-int _mypanel_sort_dirs_top(MyPanel *panel)
+void _mypanel_sort_dirs_top(MyPanel *panel)
 {
   
     qsort (panel->zeilen,panel->numfiles,sizeof(Row),_mypanel_cmpfunc_dirs_top);
