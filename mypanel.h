@@ -35,5 +35,10 @@ int _mypanel_cmpfunc_name_asc(const void *a,const void *b);
 int _mypanel_cmpfunc_name_desc(const void *a,const void *b);
 int _mypanel_cmpfunc_dirs_top(const void *a,const void *b);
 
-
 int _mypanel_sort_dirs_top();
+
+
+// file system functions
+
+int _mypanel_cd(MyPanel *panel, char*path);
+

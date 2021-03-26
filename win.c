@@ -39,54 +39,20 @@ void enableRawMode() {
 }
 
 
-
-
-int  ls(Row **rowsp,char* path)
+void _mypanel_free(MyPanel *panel)
 {
-  DIR *dp;
-  struct dirent *ep;
-  Row *rows;
-  int n=0; // Number of files in current dir
-  int i; //index pointer
-  if (!(dp=opendir(path)))
+  int lp;
+  for (lp=0;lp<panel->numfiles;lp++)
     {
-      return -1; // unable to open dir, for whatever reason
+      free(panel->zeilen[lp].statbuf);
+      free(panel->zeilen[lp].name);
+      
     }
-
-  while (readdir(dp))
-    {
-      n++;
-    }
+  free(panel->zeilen);
   
-  rows=malloc(n*sizeof(Row));
-  
-  rewinddir(dp);
-  i=0;
-  chdir(path);
-  while ((ep = readdir(dp)))
-    {
-      if (strcmp(".",ep->d_name)==0) continue;
-      rows[i].name=malloc(strlen(ep->d_name)+2);
-      strcpy(rows[i].name,ep->d_name);
-      //      printf("%ld\n",sizeof(struct stat));
-      rows[i].statbuf=malloc(sizeof(struct stat));
-      rows[i].marked=0;
-      char* fullpath=path;
-      //      strcat(fullpath,path);
-      int statrv=stat(rows[i].name,rows[i].statbuf);
-      if (statrv == -1) { printf("error stating %s, dir %s,fullpath %s\n",ep->d_name,path,fullpath);exit (1);}
-       if (S_ISDIR(rows[i].statbuf->st_mode)) {
-            strcat(rows[i].name, "/");
-       }
-
-      i++;
-      //     printf("%d %s\n",i,ep->d_name);
-    }
-
-  closedir(dp);
-  *rowsp=rows;
-  return i;
 }
+
+
 
     
 
@@ -189,15 +155,20 @@ int main(void)
 
 
   MyPanel *currentp,*other,*b;
-  links.cwd="/home/skainz";
-  links.numfiles=ls(&links.zeilen,links.cwd/*"/usr/include"*/);
+  // links.cwd="/home/skainz";
+  // links.numfiles=ls(&links.zeilen,links.cwd/*"/usr/include"*/);
 
-  rechts.cwd="/usr/share/doc";
-  rechts.numfiles=ls(&rechts.zeilen,rechts.cwd);
+  //rechts.cwd="/usr/share/doc";
+  //rechts.numfiles=ls(&rechts.zeilen,rechts.cwd);
 
+
+
+  _mypanel_cd(&links,"/home/skainz");
+  _mypanel_cd (&rechts,"/usr/include");
+  
   _mypanel_sort_dirs_top(&links);
   _mypanel_sort_dirs_top(&rechts);
-
+  
   // _mypanel_sort_dirs_top(&links);
   
   //  exit(0);
@@ -252,6 +223,8 @@ int main(void)
   
   int page_height;
   char cwd[PATH_MAX];
+  char newdir[PATH_MAX];
+	
   int lp;
   getmaxyx(stdscr,currentlines,currentcols);
   
@@ -334,26 +307,29 @@ int main(void)
 	  //  sortieren
 	  // panel refresh
 	  
-	  chdir(links.cwd);
+	  /*chdir(links.cwd);
+
 	  getcwd(cwd, sizeof(cwd));
 
 	  links.cwd=cwd;
-	  strcat(links.cwd,"/");
+	  	  strcat(links.cwd,"/");
 	  strcat(links.cwd,currentp->zeilen[selected].name);
+	  */
+	  //	  printf("CD: %s \n",links.cwd);
+
+	  strcpy(newdir,links.cwd);
+	  strcat(newdir,"/");
+	  strcat(newdir,currentp->zeilen[selected].name);
+
+	  _mypanel_free(&links);
+	  _mypanel_cd(&links,newdir);
+	  //	  chdir(links.cwd);
 	  
-	  chdir(links.cwd);
 	  
-	  for (lp=0;lp<links.numfiles;lp++)
-	    {
-	      free(links.zeilen[lp].statbuf);
-	      free(links.zeilen[lp].name);
-	      
-	    }
-	  free(links.zeilen);
-	  
-	   links.numfiles=ls(&links.zeilen,links.cwd);
+	  /*  links.numfiles=ls(&links.zeilen,links.cwd);
 	   links.cursor=0;
 	   links.toprow=0;
+	  */
 	   wclear(currentp->window);
 	  _mypanel_sort_dirs_top(&links);
 
