@@ -59,6 +59,8 @@ void _mypanel_free(MyPanel *panel)
 int b,h,ch;
 MyPanel links,rechts;
 int currentlines,currentcols;
+  char SBUF[PATH_MAX];
+
 void quit(void)
 {
   delwin(links.window);
@@ -72,7 +74,6 @@ void draw(MyPanel * panel, int start)
 {
   
   int j;
-  char SBUF[PATH_MAX];
   
   //get dimensions of left window
   int h,b;
@@ -314,15 +315,41 @@ int main(void)
 	  strcat(links.cwd,currentp->zeilen[selected].name);
 	  */
 	  //	  printf("CD: %s \n",links.cwd);
+	  //	  	  endwin();
+	  //	  printf ("CHDIR: %s\n",currentp->zeilen[selected].name);
+	  //	  sleep(5);
+	  //  snprintf(SBUF,b,"CHDIR %s\n",currentp->zeilen[selected].name);
+	    //	    mvwaddstr(currentp->window,h-5,b-strlen(SBUF)-1,SBUF);
 
-	  strcpy(newdir,currentp->cwd);
-	  strcat(newdir,"/");
-	  strcat(newdir,currentp->zeilen[selected].name);
+	  if (strcmp(currentp->zeilen[selected].name,"../")==0)
+	    {
+	      //strip last part of dir
+	      char topdir[PATH_MAX];
+	      strcpy(topdir,currentp->cwd);
+	      char* ptr=strrchr(topdir,'/');
+	      	      *ptr='\0';
+	      //	      int stripsize=strlen(ptr);
+	      printf("nd: %s\n",topdir);//currentp->cwd);
+	      
+	      //    sleep(2);
+	      //printf("dirp\n");exit(0);
+	      _mypanel_free(currentp);
+	      _mypanel_cd(currentp,topdir);
+	    } else
+	    {
+	      strcpy(newdir,currentp->cwd);
+	      strcat(newdir,"/");
+	      strncat(newdir,currentp->zeilen[selected].name,strlen(currentp->zeilen[selected].name)-1);
 
-	  _mypanel_free(currentp);
-	  _mypanel_cd(currentp,newdir);
-	  //	  chdir(links.cwd);
-	  
+	      /*if (strcmp(newdir[strlen(newdir)-1],"/")==0)
+		{
+		  *(newdir+strlen(newdir))='\0';
+		}
+	      */
+	      _mypanel_free(currentp);
+	      _mypanel_cd(currentp,newdir);
+	      //	  chdir(links.cwd);
+	    }
 	  
 	  /*  links.numfiles=ls(&links.zeilen,links.cwd);
 	   links.cursor=0;
