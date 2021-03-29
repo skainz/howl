@@ -339,16 +339,15 @@ int main(void)
 	    {
 	      strcpy(newdir,currentp->cwd);
 	      strcat(newdir,"/");
-	      strncat(newdir,currentp->zeilen[selected].name,strlen(currentp->zeilen[selected].name)-1);
-
-	      /*if (strcmp(newdir[strlen(newdir)-1],"/")==0)
+	      strncat(newdir,currentp->zeilen[selected].name,strlen(currentp->zeilen[selected].name));
+	      
+	      if (newdir[strlen(newdir)-1]=='/') //strip trailing /
 		{
-		  *(newdir+strlen(newdir))='\0';
+		  newdir[strlen(newdir)-1]='\0';
 		}
-	      */
+	      
 	      _mypanel_free(currentp);
 	      _mypanel_cd(currentp,newdir);
-	      //	  chdir(links.cwd);
 	    }
 	  
 	  /*  links.numfiles=ls(&links.zeilen,links.cwd);
