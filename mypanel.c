@@ -240,3 +240,14 @@ int _mypanel_cd(MyPanel *panel,char* path)
   return 0;
 }
 
+int _mypanel_find(MyPanel *panel,char* path)
+{
+  int l;
+
+  for (l=0;l<panel->numfiles;l++)
+    {
+      if (strcmp(path,panel->zeilen[l].name)==0) return l;
+    }
+  return -1;
+
+}

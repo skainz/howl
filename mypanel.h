@@ -9,7 +9,7 @@ typedef struct MyPanel {
   int page_height;
   WINDOW* window;
   char* cwd;
-
+  char  prev_dir[PATH_MAX];
 } MyPanel;
 
 
@@ -40,5 +40,8 @@ void _mypanel_sort_dirs_top();
 
 // file system functions
 
-int _mypanel_cd(MyPanel *panel, char*path);
+int _mypanel_cd(MyPanel *panel, char* path);
+
+// search & cursor positioning functions
+int _mypanel_find(MyPanel *panel,char* path);
 

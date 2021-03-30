@@ -323,6 +323,9 @@ int main(void)
 
 	  if (strcmp(currentp->zeilen[selected].name,"../")==0)
 	    {
+	      //	      if (strlen(currentp->prev_dir)) {
+		//	printf("Back to %s\n",currentp->prev_dir);sleep(2);
+	      //}
 	      //strip last part of dir
 	      char topdir[PATH_MAX];
 	      strcpy(topdir,currentp->cwd);
@@ -339,6 +342,7 @@ int main(void)
 	    {
 	      strcpy(newdir,currentp->cwd);
 	      strcat(newdir,"/");
+	      strcpy(currentp->prev_dir,currentp->zeilen[selected].name);;
 	      strncat(newdir,currentp->zeilen[selected].name,strlen(currentp->zeilen[selected].name));
 	      
 	      if (newdir[strlen(newdir)-1]=='/') //strip trailing /
@@ -356,6 +360,14 @@ int main(void)
 	  */
 	   wclear(currentp->window);
 	  _mypanel_sort_dirs_top(currentp);
+
+	  // set cursor on directory entry we came from
+	  int lastpos=_mypanel_find(currentp,currentp->prev_dir);
+	  if (lastpos>-1)
+	    {
+	      currentp->cursor=lastpos;
+	    }
+
 
 	  break;
 	}
