@@ -105,11 +105,10 @@ void draw(MyPanel * panel, int start)
 	  //  wattroff(panel->window,A_STANDOUT);
 	
       
-	  if (j==panel->cursor)
+	  if (j==panel->cursor && panel->focus)
 	    {
-	      wattrset(panel->window,COLOR_PAIR(1));
-
-      
+	      wattrset(panel->window,COLOR_PAIR(6));
+     
 	    } else
 	    {
 	      //    wattrset(panel->window,COLOR_PAIR(2));
@@ -123,14 +122,14 @@ void draw(MyPanel * panel, int start)
 
       int f;
       for (f=0;f<b;f++) {strncat(SBUF," ",PATH_MAX-1);}
-
+      
       mbstowcs(WBUF,SBUF,PATH_MAX);
-    
-        mvwaddnwstr(panel->window,(j+1),(2),(WBUF),b-4);
-
-        wclrtoeol(panel->window);
-      wattrset(panel->window,COLOR_PAIR(2));
-  
+      
+      mvwaddnwstr(panel->window,(j+1),(2),(WBUF),b-4);
+      
+      wclrtoeol(panel->window);
+       wattrset(panel->window,COLOR_PAIR(2));
+      
     }
 
   box(panel->window,0,0);
@@ -145,16 +144,38 @@ void draw(MyPanel * panel, int start)
   wattroff(panel->window,COLOR_PAIR(2));
   
   wattroff(panel->window,A_BOLD);
+
+  //display current path, highlight if active
+  if (panel->focus)
+    {  
+    wattron(panel->window,COLOR_PAIR(7));
+    }
+  
   snprintf(SBUF,b,"%d %s",ch,panel->cwd);
   mvwaddstr(panel->window,0,1,SBUF);
-  
+  wattroff(panel->window,COLOR_PAIR(7));
+
+  /* lower box, show current selected cursor entry
+    mvwhline(panel->window,h-3,1,0,b-2);
+    mvwaddch(panel->window,h-3,0,ACS_LTEE);
+    mvwaddch(panel->window,h-3,b-1,ACS_RTEE);
+  */
+	// #define WACS_LTEE	WACS_SSSB
+
+    
 }
 
+void setTitle(char* title)
+{
+  //  printf("\033]0;%s\a",title);
+  printf("\033]2;%s\007", title);
+}
 
 int main(void)
 {
+  //  setTitle("!lolz!");
 
-
+  // fprintf (stdout, "\33]0;%s\7", "lolr");
   MyPanel *currentp,*other,*b;
   // links.cwd="/home/skainz";
   // links.numfiles=ls(&links.zeilen,links.cwd/*"/usr/include"*/);
@@ -177,6 +198,8 @@ int main(void)
   // ende debug
   //  links.zeilen[0].marked=1;
     currentp=&links;
+    links.focus=true;
+    rechts.focus=false;
   other=&rechts;
     //  printf("anzahl: %d\n",links.numfiles);exit(0);
 
@@ -186,6 +209,7 @@ int main(void)
     exit(0);
   */
   initscr();
+  raw();
   //  enableRawMode();
   atexit(quit);
   clear();
@@ -198,17 +222,19 @@ int main(void)
     //raw();
   start_color();
   init_pair(1, COLOR_BLUE, COLOR_GREEN);
-  init_pair(2, COLOR_WHITE, COLOR_RED);
+  init_pair(2, COLOR_WHITE, COLOR_BLUE);
   init_pair(3, COLOR_RED, COLOR_MAGENTA);
 
   init_pair(4, COLOR_WHITE, COLOR_CYAN);
   init_pair(5,COLOR_WHITE,COLOR_BLUE);
-  
+
+  init_pair(6,COLOR_BLACK,COLOR_CYAN); //CURSOR
+  init_pair(7,COLOR_BLACK,COLOR_WHITE);
   links.window = newwin(LINES, COLS/2, 0, 0);
   rechts.window = newwin(LINES,COLS/2,0,COLS/2);
   //  bkgd(COLOR_PAIR(1));
     wbkgd(links.window, COLOR_PAIR(2));
-  wbkgd(rechts.window, COLOR_PAIR(1));
+  wbkgd(rechts.window, COLOR_PAIR(2));
 
   draw(&links,0);
   draw(&rechts,0);
@@ -252,7 +278,7 @@ int main(void)
 
 
       	  int selected=currentp->toprow+currentp->cursor;
-
+	  bool refresh_all=false;
       switch (ch)
 	{
 	case 331: //INSERT
@@ -260,10 +286,15 @@ int main(void)
 	  mypanel_nav_down(currentp);
 	  //	  exit(0);
 	  break;
-	case 27:
+	case 27: // ESC
 	  exit(0);
 	  break;
 	case 9:
+	  	  currentp->focus=false;
+		  other->focus=true;
+		  refresh_all=true;
+	  // TAB,focus other window
+	  // TODO: Mark new window active/current window inactive
 	  b=currentp;
 	  currentp=other;
 	  other=b;
@@ -332,7 +363,7 @@ int main(void)
 	      char* ptr=strrchr(topdir,'/');
 	      	      *ptr='\0';
 	      //	      int stripsize=strlen(ptr);
-	      printf("nd: %s\n",topdir);//currentp->cwd);
+	      //printf("nd: %s\n",topdir);//currentp->cwd);
 	      
 	      //    sleep(2);
 	      //printf("dirp\n");exit(0);
@@ -345,12 +376,12 @@ int main(void)
 	      strcpy(currentp->prev_dir,currentp->zeilen[selected].name);;
 	      strncat(newdir,currentp->zeilen[selected].name,strlen(currentp->zeilen[selected].name));
 	      
-	      if (newdir[strlen(newdir)-1]=='/') //strip trailing /
+	      if (newdir[strlen(newdir)-1]=='/') //strip trailing / on new path
 		{
 		  newdir[strlen(newdir)-1]='\0';
 		}
 	      
-	      _mypanel_free(currentp);
+	      _mypanel_free(currentp); //free previous entry
 	      _mypanel_cd(currentp,newdir);
 	    }
 	  
@@ -363,6 +394,9 @@ int main(void)
 
 	  // set cursor on directory entry we came from
 	  int lastpos=_mypanel_find(currentp,currentp->prev_dir);
+
+	  //	  setTitle("asasas");
+
 	  if (lastpos>-1)
 	    {
 	      currentp->cursor=lastpos;
@@ -375,11 +409,25 @@ int main(void)
       
 
       draw(currentp,currentp->toprow);
+      if (refresh_all)
+	
+            draw(other,other->toprow);// -currentp->toprow);
 
-      refresh();
+      //       def_prog_mode();
+      // refresh();
+      
+      // endwin();
+      //fprintf (stdout, "\33]1;%s\7", "lod");
+      //      sleep(2);
+      // fflush(stdout);
+      
+refresh();
+      
       wrefresh(links.window);
       wrefresh(rechts.window);
-
+      //      	  setTitle("lol");
+      
+      
     } 
 
   return(0);

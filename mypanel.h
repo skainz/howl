@@ -10,6 +10,7 @@ typedef struct MyPanel {
   WINDOW* window;
   char* cwd;
   char  prev_dir[PATH_MAX];
+  bool focus;
 } MyPanel;
 
 

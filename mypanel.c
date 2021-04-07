@@ -24,7 +24,7 @@ void mypanel_nav_down(MyPanel *panel)
     {
       return;
     }
-  if (panel->cursor<(panel->page_height-1))
+    if (panel->cursor<(panel->page_height-1))
     {
       panel->cursor++;
       return;
