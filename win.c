@@ -1,4 +1,4 @@
-#include <curses.h>
+#include <ncursesw/curses.h>
 #include <stdlib.h>
 #include <sys/types.h>
 #include <dirent.h>
@@ -352,6 +352,16 @@ int main(void)
 	  //  snprintf(SBUF,b,"CHDIR %s\n",currentp->zeilen[selected].name);
 	    //	    mvwaddstr(currentp->window,h-5,b-strlen(SBUF)-1,SBUF);
 
+	  // check, ob current entry ein directory ist
+
+	  if (!(S_ISDIR(currentp->zeilen[selected].statbuf->st_mode)))
+	    {
+	      
+	      // printf("is not dir!\n");sleep(1);
+	      break;
+	    }
+	  
+	  // going one dir up
 	  if (strcmp(currentp->zeilen[selected].name,"../")==0)
 	    {
 	      //	      if (strlen(currentp->prev_dir)) {
@@ -359,7 +369,9 @@ int main(void)
 	      //}
 	      //strip last part of dir
 	      char topdir[PATH_MAX];
-	      strcpy(topdir,currentp->cwd);
+	      char savedir[PATH_MAX];
+	      strcpy(savedir,currentp->cwd);
+	       strcpy(topdir,currentp->cwd);
 	      char* ptr=strrchr(topdir,'/');
 	      	      *ptr='\0';
 	      //	      int stripsize=strlen(ptr);
@@ -367,12 +379,31 @@ int main(void)
 	      
 	      //    sleep(2);
 	      //printf("dirp\n");exit(0);
+		      if (strlen(topdir)==0) {topdir[0]='/'; topdir[1]=0;}
+		      //		      printf("going up to %s\n",topdir);sleep(2);
+
 	      _mypanel_free(currentp);
-	      _mypanel_cd(currentp,topdir);
+	      int retval=_mypanel_cd(currentp,topdir);
+
+	      if (retval==-1) //chdir failed, go back to last dir
+		{
+		  //		  printf("error on cd, going to %s\n",savedir);sleep(2);
+		  int retval=_mypanel_cd(currentp,savedir);
+		  //todo: if this fails, report error
+		  
+		}
+	      //	        printf("RV: %d\n",retval);sleep(1);
 	    } else
 	    {
+
+	      char savedir[PATH_MAX];
+	      strcpy(savedir,currentp->cwd);
+	      
 	      strcpy(newdir,currentp->cwd);
+	      if (!(strcmp(newdir,"/")==0))
+		{
 	      strcat(newdir,"/");
+		}
 	      strcpy(currentp->prev_dir,currentp->zeilen[selected].name);;
 	      strncat(newdir,currentp->zeilen[selected].name,strlen(currentp->zeilen[selected].name));
 	      
@@ -382,7 +413,13 @@ int main(void)
 		}
 	      
 	      _mypanel_free(currentp); //free previous entry
-	      _mypanel_cd(currentp,newdir);
+
+	      int retval=_mypanel_cd(currentp,newdir);
+	      if (retval==-1)
+		{
+		  int retval=_mypanel_cd(currentp,savedir);
+		  //todo: if this fails, report error
+		}
 	    }
 	  
 	  /*  links.numfiles=ls(&links.zeilen,links.cwd);
