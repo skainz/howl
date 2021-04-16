@@ -79,7 +79,7 @@ void draw(MyPanel * panel, int start)
   int h,b;
   getmaxyx(panel->window, h, b);
 
-  int page_height=h-2;
+  int page_height=h-2-2;
 
   int lines=panel->numfiles;
 
@@ -155,11 +155,11 @@ void draw(MyPanel * panel, int start)
   mvwaddstr(panel->window,0,1,SBUF);
   wattroff(panel->window,COLOR_PAIR(7));
 
-  /* lower box, show current selected cursor entry
+  // lower box, show current selected cursor entry
     mvwhline(panel->window,h-3,1,0,b-2);
     mvwaddch(panel->window,h-3,0,ACS_LTEE);
     mvwaddch(panel->window,h-3,b-1,ACS_RTEE);
-  */
+  
 	// #define WACS_LTEE	WACS_SSSB
 
     
@@ -256,7 +256,7 @@ int main(void)
   while((ch=getch()) != KEY_F(10))
     {
       getmaxyx((currentp->window), h, b);
-      page_height=h-2;
+      page_height=h-2-2;
       currentp->page_height=page_height;
 
       int nl,nc;
