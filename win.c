@@ -357,8 +357,22 @@ int main(void)
 	  if (!(S_ISDIR(currentp->zeilen[selected].statbuf->st_mode)))
 	    {
 	      
-	      // printf("is not dir!\n");sleep(1);
+	      //	       printf("is not dir!\n");sleep(1);
+	      char cmdline[PATH_MAX];
+	      cmdline[0]=0;
+	      chdir(currentp->cwd);
+	      strcat(cmdline,"xdg-open ");
+	      //	      strcat(cmdline,currentp->cwd);
+	      //	      strcat(cmdline,"/");
+	      strcat(cmdline,"\"");
+	      strcat(cmdline,currentp->zeilen[selected].name);
+	      strcat(cmdline,"\"");
+	      
+	      //	      	      printf("EXECUTING %s\n",cmdline);sleep(2);
+		      	      system(cmdline);
+	      // 	      system()
 	      break;
+	      
 	    }
 	  
 	  // going one dir up
