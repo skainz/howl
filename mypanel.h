@@ -21,6 +21,7 @@ void mypanel_nav_ppage(MyPanel *panel);
 void mypanel_nav_npage(MyPanel *panel);
 void mypanel_nav_home(MyPanel *panel);
 void mypanel_nav_end(MyPanel *panel);
+void mypanel_scroll_center(MyPanel *panel,const int index);
 
 
 //Highlighting items

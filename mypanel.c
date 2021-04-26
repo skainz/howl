@@ -100,6 +100,15 @@ void mypanel_nav_end(MyPanel *panel)
   return;
 }
 
+void mypanel_scroll_center(MyPanel *panel,const int index)
+{
+  if (panel->cursor > panel->page_height)
+    {
+      panel->cursor=(panel->page_height/2);
+      panel->toprow= index -(panel->page_height/2);
+    }
+}
+
 
 int mypanel_mark_on(MyPanel *panel)
 {
