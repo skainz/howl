@@ -159,7 +159,19 @@ void draw(MyPanel * panel, int start)
     mvwhline(panel->window,h-3,1,0,b-2);
     mvwaddch(panel->window,h-3,0,ACS_LTEE);
     mvwaddch(panel->window,h-3,b-1,ACS_RTEE);
-  
+
+    SBUF[0]=0;
+
+    int selected=panel->toprow+panel->cursor;
+    strcpy(SBUF,panel->zeilen[selected].name);
+    strcat(SBUF," ");
+    snprintf(SBUF,b," %s %d",panel->zeilen[selected].name,panel->zeilen[selected].statbuf->st_size);
+    b=20;
+    for (int f=0;f<b;f++) {strncat(SBUF," ",b-1);}
+
+    
+    mvwaddstr(panel->window,h-2,1,SBUF);
+
 	// #define WACS_LTEE	WACS_SSSB
 
     
@@ -230,8 +242,8 @@ int main(void)
 
   init_pair(6,COLOR_BLACK,COLOR_CYAN); //CURSOR
   init_pair(7,COLOR_BLACK,COLOR_WHITE);
-  links.window = newwin(LINES, COLS/2, 0, 0);
-  rechts.window = newwin(LINES,COLS/2,0,COLS/2);
+  links.window = newwin(LINES-1, COLS/2, 0, 0);
+  rechts.window = newwin(LINES-1,COLS/2,0,COLS/2);
   //  bkgd(COLOR_PAIR(1));
     wbkgd(links.window, COLOR_PAIR(2));
   wbkgd(rechts.window, COLOR_PAIR(2));
@@ -267,8 +279,8 @@ int main(void)
 	  currentcols=nc;
 	  wclear(currentp->window);
 	  wclear(other->window);
-	  wresize(currentp->window,nl,nc/2);
-	  wresize(other->window,nl,nc/2);
+	  wresize(currentp->window,nl-1,nc/2);
+	  wresize(other->window,nl-1,nc/2);
 	  mvwin(other->window,0,nc/2);
 	  mvwin(currentp->window,0,0);
 	  draw(currentp,currentp->toprow);
@@ -367,6 +379,8 @@ int main(void)
 	      strcat(cmdline,"\"");
 	      strcat(cmdline,currentp->zeilen[selected].name);
 	      strcat(cmdline,"\"");
+	      strcat(cmdline," &");
+	      
 	      
 	      //	      	      printf("EXECUTING %s\n",cmdline);sleep(2);
 		      	      system(cmdline);
@@ -445,12 +459,22 @@ int main(void)
 
 	  // set cursor on directory entry we came from
 	  int lastpos=_mypanel_find(currentp,currentp->prev_dir);
-
+	  
+	  //	  printf("lastpos: %d,ph %d, toprow: %d\n",lastpos,currentp->page_height,currentp->toprow);sleep(2);
 	  //	  setTitle("asasas");
 
 	  if (lastpos>-1)
 	    {
+	      
 	      currentp->cursor=lastpos;
+	      if (currentp->cursor > currentp->page_height)
+		{
+		  mypanel_scroll_center(currentp,lastpos);
+	      
+		  //		  currentp->cursor = lastpos % currentp->page_height;
+		  //currentp->cursor=(currentp->page_height/2);
+		  //currentp->toprow= lastpos -(currentp->page_height/2);/// currentp->page_height;
+		}
 	    }
 
 
