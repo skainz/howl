@@ -260,7 +260,7 @@ int main(void)
 
 
   
-  int page_height;
+  int page_height,fpos;
   char newdir[PATH_MAX];
 	
   getmaxyx(stdscr,currentlines,currentcols);
@@ -337,6 +337,17 @@ int main(void)
 	  mypanel_nav_down(currentp);
 	  break;
 
+	case 19:
+	  fpos=_mypanel_find(currentp,"apt.gpg");
+	  currentp->cursor=fpos;
+	  printf("filepos: %d\n",fpos);
+
+	  //	     if (currentp->cursor > currentp->page_height)
+
+		  mypanel_scroll_center(currentp,fpos);
+
+	  break;
+	  
 	case 10:
 
 	  // todo:
@@ -407,8 +418,10 @@ int main(void)
 	      
 	      //    sleep(2);
 	      //printf("dirp\n");exit(0);
-		      if (strlen(topdir)==0) {topdir[0]='/'; topdir[1]=0;}
-		      //		      printf("going up to %s\n",topdir);sleep(2);
+		      if (strlen(topdir)==0)
+			{
+			  topdir[0]='/'; topdir[1]=0;
+			}
 
 	      _mypanel_free(currentp);
 	      int retval=_mypanel_cd(currentp,topdir);
@@ -420,7 +433,7 @@ int main(void)
 		  //todo: if this fails, report error
 		  
 		}
-	      //	        printf("RV: %d\n",retval);sleep(1);
+
 	    } else
 	    {
 
@@ -450,18 +463,11 @@ int main(void)
 		}
 	    }
 	  
-	  /*  links.numfiles=ls(&links.zeilen,links.cwd);
-	   links.cursor=0;
-	   links.toprow=0;
-	  */
 	   wclear(currentp->window);
 	  _mypanel_sort_dirs_top(currentp);
 
 	  // set cursor on directory entry we came from
 	  int lastpos=_mypanel_find(currentp,currentp->prev_dir);
-	  
-	  //	  printf("lastpos: %d,ph %d, toprow: %d\n",lastpos,currentp->page_height,currentp->toprow);sleep(2);
-	  //	  setTitle("asasas");
 
 	  if (lastpos>-1)
 	    {
@@ -470,10 +476,6 @@ int main(void)
 	      if (currentp->cursor > currentp->page_height)
 		{
 		  mypanel_scroll_center(currentp,lastpos);
-	      
-		  //		  currentp->cursor = lastpos % currentp->page_height;
-		  //currentp->cursor=(currentp->page_height/2);
-		  //currentp->toprow= lastpos -(currentp->page_height/2);/// currentp->page_height;
 		}
 	    }
 
