@@ -183,9 +183,17 @@ void setTitle(char* title)
   printf("\033]2;%s\007", title);
 }
 
+void setClip(char* title)
+{
+  //  printf("\033]0;%s\a",title);
+  printf("\033]52;c;%s\x07", title);
+}
+
+
 int main(void)
 {
-  //  setTitle("!lolz!");
+    setTitle("!lolz!");
+    setClip("!lolz!");
 
   // fprintf (stdout, "\33]0;%s\7", "lolr");
   MyPanel *currentp,*other,*b;
@@ -267,6 +275,7 @@ int main(void)
   
   while((ch=getch()) != KEY_F(10))
     {
+      printf("%d\n",ch);//sleep(1);
       getmaxyx((currentp->window), h, b);
       page_height=h-2-2;
       currentp->page_height=page_height;
@@ -297,9 +306,6 @@ int main(void)
 	  mypanel_mark_toggle(currentp);
 	  mypanel_nav_down(currentp);
 	  //	  exit(0);
-	  break;
-	case 27: // ESC
-	  exit(0);
 	  break;
 	case 9:
 	  	  currentp->focus=false;
@@ -339,13 +345,12 @@ int main(void)
 
 	case 19:
 	  fpos=_mypanel_find(currentp,"apt.gpg");
-	  currentp->cursor=fpos;
-	  printf("filepos: %d\n",fpos);
 
-	  //	     if (currentp->cursor > currentp->page_height)
-
-		  mypanel_scroll_center(currentp,fpos);
-
+	  if (fpos >-1)
+	    {
+	      currentp->cursor=fpos;
+	      mypanel_scroll_center(currentp,fpos);
+	    }
 	  break;
 	  
 	case 10:
