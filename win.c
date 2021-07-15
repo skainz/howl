@@ -294,6 +294,9 @@ int main(void)
 	  mvwin(currentp->window,0,0);
 	  draw(currentp,currentp->toprow);
 	  draw(other,other->toprow);
+
+	  //make sure cursor is visible after resize
+	  mypanel_scroll_center(currentp,currentp->cursor);
 	  
 	}
 
